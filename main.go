@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+// Extracts image info from a file at the specified path.
+// It opens the file, reads its contents, and then delegates to ExtractInfo to parse the metadata.
 func ExtractFileInfo(path string) (*ImageInfo, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -18,17 +20,31 @@ func ExtractFileInfo(path string) (*ImageInfo, error) {
 	return ExtractInfo(file)
 }
 
+// Extracts image info from a byte slice.
+// It creates a bytes.Reader for the byte slice and delegates to ExtractInfo.
 func ExtractBlobInfo(buf []byte) (*ImageInfo, error) {
 	reader := bytes.NewReader(buf)
 	return ExtractInfo(reader)
 }
 
-func ExtractInfo(reader io.ReadSeeker) (*ImageInfo, error) {
-	return extractInfo(reader)
+// Extracts image info from an io.ReaderAt.
+// It ensures the provided reader is compatible with the underlying extraction logic,
+// converting it to an io.ReadSeeker if necessary, and then delegates to extractInfo.
+func ExtractInfo(reader io.ReaderAt) (*ImageInfo, error) {
+	var sr io.ReadSeeker
+
+	if r, ok := reader.(io.ReadSeeker); ok {
+		sr = r
+	} else {
+		const max_int int64 = 1<<63 - 1
+		sr = io.NewSectionReader(reader, 0, max_int)
+	}
+
+	return extractInfo(sr)
 }
 
 func extractInfo(reader io.ReadSeeker) (info *ImageInfo, err error) {
-	buf, err := readAtLeast(reader, make([]byte, 0, 2), 2)
+	buf, err := readAtLeast(reader, make([]byte, 0, 8), 4)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +86,9 @@ func extractInfo(reader io.ReadSeeker) (info *ImageInfo, err error) {
 	return nil, errors.New("unknown format")
 }
 
+// Ensures the buffer contains at least the required number of bytes (`needed`).
+// If the buffer's length is already sufficient, it returns the buffer unchanged.
+// Otherwise, it reads additional bytes from the provided io.Reader to meet the requirement.
 func readAtLeast(reader io.Reader, buf []byte, needed int) ([]byte, error) {
 	if len(buf) >= needed {
 		return buf, nil
