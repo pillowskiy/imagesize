@@ -2,11 +2,14 @@ package extractor
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+
+	"github.com/pillowskiy/imagesize/imagebytes"
 )
 
-var jpegHeader = []byte("\xFF\xD8\xFF")
+var jpegHeader = []byte("\xFF\xD8\xFF\xE0")
 
 // JPEG defines an extractor for JPEG image format.
 //
@@ -34,19 +37,16 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 		return
 	}
 
-	buf1 := make([]byte, 1)
-	buf2 := make([]byte, 2)
-	buf4 := make([]byte, 4)
-
-	if _, err = reader.Read(buf1); err != nil {
+	seg := make([]byte, 1)
+	if _, err = reader.Read(seg); err != nil {
 		return
 	}
 
 	// Read untill Start of Scan marker or end of file
-	for buf1[0] != 0xDA && buf1[0] != 0 {
+	for seg[0] != 0xDA && seg[0] != 0 {
 		// Read until 0xFF (Start of Segment)
-		for buf1[0] != 0xFF {
-			_, err = reader.Read(buf1)
+		for seg[0] != 0xFF {
+			_, err = reader.Read(seg)
 			if err != nil {
 				err = fmt.Errorf("failed to read byte: %w", err)
 				return
@@ -54,8 +54,8 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 		}
 
 		// Skip past all 0xFF bytes
-		for buf1[0] == 0xFF {
-			_, err = reader.Read(buf1)
+		for seg[0] == 0xFF {
+			_, err = reader.Read(seg)
 			if err != nil {
 				err = fmt.Errorf("failed to read byte: %w", err)
 				return
@@ -63,41 +63,36 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 		}
 
 		// Check for specific markers (0xC0 to 0xC3 - Start of Frame, contains image size data)
-		if buf1[0] >= 0xC0 && buf1[0] <= 0xC3 {
+		if seg[0] >= 0xC0 && seg[0] <= 0xC3 {
 			_, err = reader.Seek(3, io.SeekCurrent)
 			if err != nil {
 				return
 			}
 
-			_, err = reader.Read(buf4)
-			if err != nil {
-				err = fmt.Errorf("failed to read width and height: %w", err)
-				return
-			}
+			// In JPEG height is first
+			heightU16, heightErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
+			widthU16, widthErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
 
-			// Unpack the width and height (big-endian)
-			width = int(buf4[0])<<8 | int(buf4[1])
-			height = int(buf4[2])<<8 | int(buf4[3])
-
-			break
+			return int(widthU16), int(heightU16), errors.Join(widthErr, heightErr)
 		}
 
-		if _, err = reader.Read(buf2); err != nil {
+		offset, offsetErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
+		if err != nil {
+			err = fmt.Errorf("failed to read offset: %w", offsetErr)
 			return
 		}
 
-		// Unpack the offset (big-endian)
-		offset := int(buf2[0])<<8 | int(buf2[1])
 		if _, err = reader.Seek(int64(offset-2), io.SeekCurrent); err != nil {
 			err = fmt.Errorf("failed to seek to the next segment: %w", err)
 			return
 		}
 
-		if _, err = reader.Read(buf1); err != nil {
+		if _, err = reader.Read(seg); err != nil {
 			err = fmt.Errorf("failed to read byte: %w", err)
 			return
 		}
 	}
 
+	err = errors.New("failed to read image size, stop marker was reached")
 	return
 }
