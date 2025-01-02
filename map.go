@@ -7,6 +7,7 @@ var imageSizeExtractors = []SizeExtractor{
 	extractor.GIF{},
 	extractor.WEBP{},
 	extractor.PNG{},
+	extractor.HEIF{},
 }
 
 // RegisterSizeExtractor adds a new SizeExtractor to the list of image size extractors.
