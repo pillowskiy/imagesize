@@ -92,8 +92,8 @@ func (e WEBP) webpVp8lSize(reader io.ReadSeeker) (width, height int, err error) 
 	}
 
 	// Extract the width and height from the 32-bit integer (packed format).
-	width = int(dims & 0x3FFF)
-	height = int((dims >> 14) & 0x3FFF)
+	width = int(dims&0x3FFF) + 1
+	height = int((dims>>14)&0x3FFF) + 1
 	return
 }
 
@@ -108,5 +108,5 @@ func (e WEBP) webpVp8xSize(reader io.ReadSeeker) (width, height int, err error) 
 
 	widthU24, widthErr := imagebytes.ReadU24(reader, imagebytes.LittleEndian)
 	heightU24, heightErr := imagebytes.ReadU24(reader, imagebytes.LittleEndian)
-	return int(widthU24), int(heightU24), errors.Join(widthErr, heightErr)
+	return int(widthU24 + 1), int(heightU24 + 1), errors.Join(widthErr, heightErr)
 }

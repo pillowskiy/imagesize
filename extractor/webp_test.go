@@ -45,8 +45,8 @@ func TestWEBP(t *testing.T) {
 				[]byte("VP8X"),
 				// Reserved, ICC, Alpha, Exif metadata, Animation...
 				make([]byte, 8),          // See https://developers.google.com/speed/webp/docs/riff_container#extended_header
-				[]byte{0x01, 0x00, 0x00}, // Width: 1 (u24 little endian)
-				[]byte{0x02, 0x00, 0x00}, // Width: 2 (u24 little endian)
+				[]byte{0x00, 0x00, 0x00}, // Width+1: 1 (u24 little endian)
+				[]byte{0x01, 0x00, 0x00}, // Height+1: 2 (u24 little endian)
 			),
 		},
 		{
@@ -57,7 +57,7 @@ func TestWEBP(t *testing.T) {
 				// See https://developers.google.com/speed/webp/docs/webp_lossless_bitstream_specification#3_riff_header
 				make([]byte, 5),
 				// 14 bits for width and 14 bits for height:
-				[]byte{0x01, 0x80, 0x00},       // Width: 1, Height: 2 as 0x01 | (0x02 << 14)
+				[]byte{0x00, 0x40, 0x00},       // 3-byte representation: (0x00 | (0x01 << 14)) as Width+1: 1, Height+1: 2
 				[]byte{0x00, 0x00, 0x00, 0x00}, // alpha_is_used and version_number (3 bit code that must be set to 0)
 			),
 		},
