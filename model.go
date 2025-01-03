@@ -12,7 +12,7 @@ type SizeExtractor interface {
 	// Parameters:
 	//   - buf: A byte slice containing the data to inspect.
 	// Returns:
-	//   - A string representing the detected format (e.g., "JPEG", "PNG").
+	//   - A string representing the detected format (e.g., "jpeg", "png").
 	//   - A boolean indicating whether the buffer matches the format.
 	MatchFormat(buf []byte) (string, bool)
 

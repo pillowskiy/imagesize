@@ -36,8 +36,8 @@ func ExtractInfo(reader io.ReaderAt) (*ImageInfo, error) {
 	if r, ok := reader.(io.ReadSeeker); ok {
 		sr = r
 	} else {
-		const max_int int64 = 1<<63 - 1
-		sr = io.NewSectionReader(reader, 0, max_int)
+		const maxInt int64 = 1<<63 - 1
+		sr = io.NewSectionReader(reader, 0, maxInt)
 	}
 
 	return extractInfo(sr)
