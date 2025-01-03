@@ -13,7 +13,8 @@ func TestJPEG(t *testing.T) {
 	t.Parallel()
 	extractor := extractor.JPEG{}
 
-	jpegHeader := []byte{0xFF, 0xD8, 0xFF, 0xE0} // SOI and APP0 markers
+	jpegMinimalHeader := []byte{0xFF, 0xD8, 0xFF} // SOI
+	jpegHeader := append(jpegMinimalHeader, 0xE0) // APP0 header
 
 	validJPEG := mergeBuffers(
 		jpegHeader,
@@ -36,19 +37,13 @@ func TestJPEG(t *testing.T) {
 			0x00,       // Horizontal sampling factor
 			0x00,       // Vertical sampling factor
 			0xFF, 0xDA, // SOS marker
-			// 0x00, 0x0C, // Length of the marker
-			// 0x01,             // Number of components in the scan
-			// 0x01,             // Component ID
-			// 0x00,             // Spectral selection
-			// 0x00,             // Successive approximation
-			// 0x00, 0x00, 0x00, // Compressed data
 			0xFF, 0xD9, // EOI (End of Image)
 		},
 	)
 
 	t.Run("buf size should be a length of the jpeg header", func(t *testing.T) {
 		bufSize := extractor.BufSize()
-		expectedBufSize := len(jpegHeader)
+		expectedBufSize := len(jpegMinimalHeader)
 
 		if bufSize != expectedBufSize {
 			t.Errorf("expected buf size %d, got %d", expectedBufSize, bufSize)

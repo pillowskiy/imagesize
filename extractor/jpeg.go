@@ -9,7 +9,9 @@ import (
 	"github.com/pillowskiy/imagesize/imagebytes"
 )
 
-var jpegHeader = []byte("\xFF\xD8\xFF\xE0")
+// Without APP marker
+// See https://stackoverflow.com/questions/5413022/is-the-2nd-and-3rd-byte-of-a-jpeg-image-always-the-app0-or-app1-marker
+var jpegHeader = []byte("\xFF\xD8\xFF")
 
 // JPEG defines an extractor for JPEG image format.
 //
@@ -37,8 +39,8 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 		return
 	}
 
-	seg := make([]byte, 1)
-	if _, err = reader.Read(seg); err != nil {
+	var seg [1]byte
+	if seg, err = e.readSegment(reader); err != nil {
 		return
 	}
 
@@ -46,18 +48,14 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 	for seg[0] != 0xDA && seg[0] != 0 {
 		// Read until 0xFF (Start of Segment)
 		for seg[0] != 0xFF {
-			_, err = reader.Read(seg)
-			if err != nil {
-				err = fmt.Errorf("failed to read byte: %w", err)
+			if seg, err = e.readSegment(reader); err != nil {
 				return
 			}
 		}
 
 		// Skip past all 0xFF bytes
 		for seg[0] == 0xFF {
-			_, err = reader.Read(seg)
-			if err != nil {
-				err = fmt.Errorf("failed to read byte: %w", err)
+			if seg, err = e.readSegment(reader); err != nil {
 				return
 			}
 		}
@@ -69,11 +67,15 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 				return
 			}
 
-			// In JPEG height is first
 			heightU16, heightErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
 			widthU16, widthErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
 
-			return int(widthU16), int(heightU16), errors.Join(widthErr, heightErr)
+			if sizeErr := errors.Join(widthErr, heightErr); sizeErr != nil {
+				err = fmt.Errorf("failed to read image size: %w", sizeErr)
+				return
+			}
+
+			return int(widthU16), int(heightU16), nil
 		}
 
 		offset, offsetErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
@@ -87,12 +89,19 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 			return
 		}
 
-		if _, err = reader.Read(seg); err != nil {
-			err = fmt.Errorf("failed to read byte: %w", err)
+		if seg, err = e.readSegment(reader); err != nil {
 			return
 		}
 	}
 
 	err = errors.New("failed to read image size, stop marker was reached")
+	return
+}
+
+// More readable, go compiler should inline this, so no performance loss
+func (e JPEG) readSegment(reader io.ReadSeeker) (seg [1]byte, err error) {
+	if _, err = reader.Read(seg[:]); err != nil {
+		err = fmt.Errorf("failed to read segment: %w", err)
+	}
 	return
 }
