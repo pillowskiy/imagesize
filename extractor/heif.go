@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -180,11 +179,11 @@ func (e HEIF) MatchFormat(buf []byte) (format string, match bool) {
 		return ext, match
 	}
 
-	return e.matchBrandSliceFormat(buf, 12, 24)
+	return e.matchCompatibleBrandFormat(buf, 12, 24)
 }
 
 // See: https://github.com/nokiatech/heif/blob/be43efdf273ae9cf90e552b99f16ac43983f3d19/srcs/reader/heifreaderimpl.cpp#L738
-func (e HEIF) matchBrandSliceFormat(buf []byte, startIndex, endIndex int) (string, bool) {
+func (e HEIF) matchCompatibleBrandFormat(buf []byte, startIndex, endIndex int) (string, bool) {
 	size := len(buf)
 	if size < endIndex {
 		endIndex = size - size%4
@@ -193,7 +192,7 @@ func (e HEIF) matchBrandSliceFormat(buf []byte, startIndex, endIndex int) (strin
 	const chunkSize = 4
 
 	for i := startIndex; i < endIndex; i += chunkSize {
-		eob := i + chunkSize // End of brand chunk
+		eob := i + chunkSize // end of potential brand chunk index
 		b := buf[i:eob]
 		if _, ok := ftypCompatibleBrandsMap[string(b)]; ok {
 			var nextBrand [chunkSize]byte
@@ -230,8 +229,8 @@ func (e HEIF) skipToTag(reader io.ReadSeeker, tag []byte) (uint32, error) {
 	var tagBuf [4]byte
 
 	for {
-		var size uint32
-		if err := binary.Read(reader, binary.BigEndian, &size); err != nil {
+		size, err := imagebytes.ReadU32(reader, imagebytes.BigEndian)
+		if err != nil {
 			return 0, err
 		}
 
