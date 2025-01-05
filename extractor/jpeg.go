@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/pillowskiy/imagesize/imagebytes"
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 // Without APP marker
@@ -70,7 +71,7 @@ func (e JPEG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 			heightU16, heightErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
 			widthU16, widthErr := imagebytes.ReadU16(reader, imagebytes.BigEndian)
 
-			if sizeErr := errors.Join(widthErr, heightErr); sizeErr != nil {
+			if sizeErr := imagerrors.Join(widthErr, heightErr); sizeErr != nil {
 				err = fmt.Errorf("failed to read image size: %w", sizeErr)
 				return
 			}

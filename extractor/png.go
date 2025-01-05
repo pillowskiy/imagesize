@@ -2,11 +2,11 @@ package extractor
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 
 	"github.com/pillowskiy/imagesize/imagebytes"
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 var (
@@ -62,5 +62,5 @@ func (e PNG) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 
 	widthU32, widthErr := imagebytes.ReadU32(reader, imagebytes.BigEndian)
 	heightU32, heightErr := imagebytes.ReadU32(reader, imagebytes.BigEndian)
-	return int(widthU32), int(heightU32), errors.Join(widthErr, heightErr)
+	return int(widthU32), int(heightU32), imagerrors.Join(widthErr, heightErr)
 }

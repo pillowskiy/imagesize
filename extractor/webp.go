@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/pillowskiy/imagesize/imagebytes"
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 var webpHeader = []byte("WEBP")
@@ -72,7 +73,7 @@ func (e WEBP) webpVp8Size(reader io.ReadSeeker) (width, height int, err error) {
 
 	widthU16, widthErr := imagebytes.ReadU16(reader, imagebytes.LittleEndian)
 	heightU16, heightErr := imagebytes.ReadU16(reader, imagebytes.LittleEndian)
-	return int(widthU16), int(heightU16), errors.Join(widthErr, heightErr)
+	return int(widthU16), int(heightU16), imagerrors.Join(widthErr, heightErr)
 }
 
 // The WebP VP8L format stores the width and height as packed data in a single 32-bit integer at byte offset 21.
@@ -108,5 +109,5 @@ func (e WEBP) webpVp8xSize(reader io.ReadSeeker) (width, height int, err error) 
 
 	widthU24, widthErr := imagebytes.ReadU24(reader, imagebytes.LittleEndian)
 	heightU24, heightErr := imagebytes.ReadU24(reader, imagebytes.LittleEndian)
-	return int(widthU24 + 1), int(heightU24 + 1), errors.Join(widthErr, heightErr)
+	return int(widthU24 + 1), int(heightU24 + 1), imagerrors.Join(widthErr, heightErr)
 }

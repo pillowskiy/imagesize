@@ -2,11 +2,11 @@ package extractor
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 
 	"github.com/pillowskiy/imagesize/imagebytes"
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 var gifHeader = []byte("\x47\x49\x46")
@@ -38,5 +38,5 @@ func (e GIF) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 
 	widthU16, widthErr := imagebytes.ReadU16(reader, imagebytes.LittleEndian)
 	heightU16, heightErr := imagebytes.ReadU16(reader, imagebytes.LittleEndian)
-	return int(widthU16), int(heightU16), errors.Join(widthErr, heightErr)
+	return int(widthU16), int(heightU16), imagerrors.Join(widthErr, heightErr)
 }

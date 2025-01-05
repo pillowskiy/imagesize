@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 // Extracts image info from a file at the specified path.
@@ -51,7 +53,7 @@ func extractInfo(reader io.ReadSeeker) (info *ImageInfo, err error) {
 
 	defer func() {
 		if _, seekErr := reader.Seek(0, io.SeekStart); seekErr != nil {
-			err = errors.Join(err, seekErr)
+			err = imagerrors.Join(err, seekErr)
 		}
 	}()
 

@@ -2,12 +2,13 @@ package imagebytes
 
 import (
 	"encoding/binary"
-	"errors"
 	"io"
+
+	"errors"
 )
 
 // Endian defines the byte order (endianness) used when reading data.
-type Endian int
+type Endian uint8
 
 const (
 	// LittleEndian specifies little-endian byte order.
@@ -19,6 +20,7 @@ const (
 
 var ErrUnsupportedEndian = errors.New("unsupported endian")
 
+// Reads a 8-bit unsigned integer from the provided reader
 func ReadU8(reader io.Reader) (uint8, error) {
 	buf := make([]byte, 1)
 	if _, err := io.ReadFull(reader, buf); err != nil {

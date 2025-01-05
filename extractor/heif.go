@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/pillowskiy/imagesize/imagebytes"
+	"github.com/pillowskiy/imagesize/imagerrors"
 )
 
 var ftypHeader = []byte("ftyp")
@@ -118,8 +119,8 @@ func (e HEIF) ExtractSize(reader io.ReadSeeker) (width, height int, err error) {
 
 			widthU32, widthErr := imagebytes.ReadU32(reader, imagebytes.BigEndian)
 			heightU32, heightErr := imagebytes.ReadU32(reader, imagebytes.BigEndian)
-			if readSizeErr := errors.Join(widthErr, heightErr); err != nil {
-				err = readSizeErr
+			if sizeErr := imagerrors.Join(widthErr, heightErr); err != nil {
+				err = sizeErr
 				return
 			}
 
