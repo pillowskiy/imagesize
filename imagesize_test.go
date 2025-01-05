@@ -27,7 +27,6 @@ var testCases = []TestGroup{
 		Name: "Avif",
 		Cases: []TestCase{
 			{
-				Name: "Success",
 				Path: "_testdata/avif/20x20.avif",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -43,7 +42,6 @@ var testCases = []TestGroup{
 		Name: "GIF",
 		Cases: []TestCase{
 			{
-				Name: "Success",
 				Path: "_testdata/gif/200x200.gif",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -59,7 +57,6 @@ var testCases = []TestGroup{
 		Name: "HEIC",
 		Cases: []TestCase{
 			{
-				Name: "Success",
 				Path: "_testdata/heic/heic.heic",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -71,7 +68,7 @@ var testCases = []TestGroup{
 			},
 
 			{
-				Name: "Success_MSF1",
+				Name: "MSF1",
 				Path: "_testdata/heic/heic_msf1.heic",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -87,7 +84,6 @@ var testCases = []TestGroup{
 		Name: "JPEG",
 		Cases: []TestCase{
 			{
-				Name: "Success",
 				Path: "_testdata/jpeg/20x20.jpg",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -103,7 +99,6 @@ var testCases = []TestGroup{
 		Name: "PNG",
 		Cases: []TestCase{
 			{
-				Name: "Success",
 				Path: "_testdata/png/20x20.png",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -114,7 +109,7 @@ var testCases = []TestGroup{
 				},
 			},
 			{
-				Name: "Success_Animated",
+				Name: "Animated",
 				Path: "_testdata/png/100x100_animated.png",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -130,7 +125,7 @@ var testCases = []TestGroup{
 		Name: "WEBP",
 		Cases: []TestCase{
 			{
-				Name: "Success_VP8",
+				Name: "VP8_",
 				Path: "_testdata/webp/vp8_20x20.webp",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -141,7 +136,7 @@ var testCases = []TestGroup{
 				},
 			},
 			{
-				Name: "Success_VP8L",
+				Name: "VP8L",
 				Path: "_testdata/webp/vp8l_20x20.webp",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{
@@ -152,7 +147,7 @@ var testCases = []TestGroup{
 				},
 			},
 			{
-				Name: "Success_VP8X",
+				Name: "VP8X",
 				Path: "_testdata/webp/vp8x_180x180.webp",
 				Expected: &imagesize.ImageInfo{
 					ImageSize: imagesize.ImageSize{

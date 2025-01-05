@@ -29,7 +29,7 @@ func TestWEBP(t *testing.T) {
 		Buf  []byte
 	}{
 		{
-			Name: "VP8 ",
+			Name: "VP8_",
 			Buf: mergeBuffers(
 				validWEBP,
 				[]byte("VP8 "),
@@ -64,7 +64,7 @@ func TestWEBP(t *testing.T) {
 	}
 
 	for _, validWEBP := range validWEBPs {
-		t.Run(fmt.Sprintf("should extract correct size for %s WebP", validWEBP.Name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("ExtractSizeFromValidImage/%s", validWEBP.Name), func(t *testing.T) {
 			reader := bytes.NewReader(validWEBP.Buf)
 			width, height, err := extractor.ExtractSize(reader)
 			if err != nil {
@@ -81,7 +81,7 @@ func TestWEBP(t *testing.T) {
 		})
 	}
 
-	t.Run("should error on invalid VP8 WebP format", func(t *testing.T) {
+	t.Run("InvalidWEBPCompression", func(t *testing.T) {
 		invalidWEBP := mergeBuffers(
 			webpRIFFHeader,
 			webpFileSizeHeader,
@@ -97,7 +97,7 @@ func TestWEBP(t *testing.T) {
 		}
 	})
 
-	t.Run("should not match format for non-WebP file", func(t *testing.T) {
+	t.Run("InvalidImageFormatDetection", func(t *testing.T) {
 		_, matched := extractor.MatchFormat([]byte("NOTWEBPHEADER"))
 		if matched {
 			t.Error("expected no match for non-WebP file")

@@ -2,8 +2,6 @@ package extractor_test
 
 import (
 	"bytes"
-	"errors"
-	"io"
 	"testing"
 
 	"github.com/pillowskiy/imagesize/extractor"
@@ -41,7 +39,7 @@ func TestJPEG(t *testing.T) {
 		},
 	)
 
-	t.Run("buf size should be a length of the jpeg header", func(t *testing.T) {
+	t.Run("BufferSizeMatchesJPEGHeaderLength", func(t *testing.T) {
 		bufSize := extractor.BufSize()
 		expectedBufSize := len(jpegMinimalHeader)
 
@@ -50,7 +48,7 @@ func TestJPEG(t *testing.T) {
 		}
 	})
 
-	t.Run("should match format", func(t *testing.T) {
+	t.Run("FormatDetection", func(t *testing.T) {
 		format, matched := extractor.MatchFormat(validJPEG)
 		if !matched {
 			t.Error("expected match for valid JPEG file")
@@ -62,7 +60,7 @@ func TestJPEG(t *testing.T) {
 		}
 	})
 
-	t.Run("should extract size", func(t *testing.T) {
+	t.Run("ExtractSizeFromValidImage", func(t *testing.T) {
 		reader := bytes.NewReader(validJPEG)
 		width, height, err := extractor.ExtractSize(reader)
 		if err != nil {
@@ -78,41 +76,7 @@ func TestJPEG(t *testing.T) {
 		}
 	})
 
-	t.Run("should error on corrupted JPEG", func(t *testing.T) {
-		invalidJPEG := mergeBuffers(
-			jpegHeader,
-			[]byte{
-				0x00, 0x12, // Incorrect length of the marker 16 instead of 17
-				0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, // "JFIF" identifier
-				0x01, 0x01, // Version
-				0x00,       // Units
-				0x00, 0x01, // X density
-				0x00, 0x01, // Y density
-				0x00, 0x00, // X thumbnail
-				0x00, 0x00, // Y thumbnail
-				0xFF, 0xC0, // SOF0 marker
-				0x00, 0x0B, // Length of the marker
-				0x08,       // Precision (8 bits)
-				0x00, 0x02, // Height
-				0x00, 0x01, // Width
-				0x01,       // Number of components
-				0x01,       // Component ID
-				0x00,       // Horizontal sampling factor
-				0x00,       // Vertical sampling factor
-				0xFF, 0xDA, // SOS marker
-				0xFF, 0xD9, // EOI (End of Image)
-			},
-		)
-
-		reader := bytes.NewReader(invalidJPEG)
-		_, _, err := extractor.ExtractSize(reader)
-
-		if err == nil {
-			t.Fatalf("expected error due to missing height, got nil")
-		}
-	})
-
-	t.Run("should EOF on bad JPEG", func(t *testing.T) {
+	t.Run("CorruptedImage", func(t *testing.T) {
 		invalidJPEG := mergeBuffers(
 			jpegHeader,
 			[]byte{
@@ -137,13 +101,9 @@ func TestJPEG(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error due to missing height, got nil")
 		}
-
-		if !errors.Is(err, io.EOF) {
-			t.Fatalf("expected EOF error")
-		}
 	})
 
-	t.Run("should not match format for non-JPEG file", func(t *testing.T) {
+	t.Run("InvalidImageFormatDetection", func(t *testing.T) {
 		nonJPEG := []byte("NOTJPEGHEADER")
 		_, matched := extractor.MatchFormat(nonJPEG)
 

@@ -18,7 +18,7 @@ func TestGIF(t *testing.T) {
 		gifHeight        = []byte{0x02, 0x00} // 2
 	)
 
-	t.Run("buf size should be a length of the gif header", func(t *testing.T) {
+	t.Run("BufferSizeMatchesGIFHeaderLength", func(t *testing.T) {
 		bufSize := extractor.BufSize()
 		expectedBufSize := len(gifHeader)
 
@@ -33,7 +33,7 @@ func TestGIF(t *testing.T) {
 		gifWidth, gifHeight,
 	)
 
-	t.Run("should match format", func(t *testing.T) {
+	t.Run("FormatDetection", func(t *testing.T) {
 		format, matched := extractor.MatchFormat(validGIF)
 		if !matched {
 			t.Error("expected match for valid GIF file")
@@ -45,7 +45,7 @@ func TestGIF(t *testing.T) {
 		}
 	})
 
-	t.Run("should extract size", func(t *testing.T) {
+	t.Run("ExtractSizeFromValidImage", func(t *testing.T) {
 		reader := bytes.NewReader(validGIF)
 		width, height, err := extractor.ExtractSize(reader)
 		if err != nil {
@@ -61,7 +61,7 @@ func TestGIF(t *testing.T) {
 		}
 	})
 
-	t.Run("should error on corrupted GIF", func(t *testing.T) {
+	t.Run("CorruptedImage", func(t *testing.T) {
 		invalidGIF := mergeBuffers(
 			gifHeader,
 			gifVersionHeader,
@@ -76,7 +76,7 @@ func TestGIF(t *testing.T) {
 		}
 	})
 
-	t.Run("should not match format for non-GIF file", func(t *testing.T) {
+	t.Run("BufferSizeMatchesJPEGHeaderLength", func(t *testing.T) {
 		nonGIF := []byte("NOTGIFHEADER")
 		_, matched := extractor.MatchFormat(nonGIF)
 

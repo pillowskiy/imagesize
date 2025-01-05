@@ -30,7 +30,7 @@ func TestPNG(t *testing.T) {
 		)
 	}
 
-	t.Run("buf size should match PNG header length", func(t *testing.T) {
+	t.Run("BufferSizeMatchesPNGHeaderLength", func(t *testing.T) {
 		bufSize := extractor.BufSize()
 		expectedBufSize := len(pngHeader)
 
@@ -39,7 +39,7 @@ func TestPNG(t *testing.T) {
 		}
 	})
 
-	t.Run("should match format for valid PNG", func(t *testing.T) {
+	t.Run("FormatDetection", func(t *testing.T) {
 		validPNG := mergePNG()
 		format, matched := extractor.MatchFormat(validPNG)
 		if !matched {
@@ -52,7 +52,7 @@ func TestPNG(t *testing.T) {
 		}
 	})
 
-	t.Run("should extract size for valid PNG", func(t *testing.T) {
+	t.Run("ExtractSizeFromValidImage", func(t *testing.T) {
 		validPNG := mergePNG()
 		reader := bytes.NewReader(validPNG)
 		width, height, err := extractor.ExtractSize(reader)
@@ -69,7 +69,7 @@ func TestPNG(t *testing.T) {
 		}
 	})
 
-	t.Run("should error on corrupted PNG file (missing IHDR)", func(t *testing.T) {
+	t.Run("CorruptedImage_IHDR", func(t *testing.T) {
 		invalidPNG := mergeBuffers(
 			pngHeader,
 			pngSequenceHeader,
@@ -85,7 +85,7 @@ func TestPNG(t *testing.T) {
 		}
 	})
 
-	t.Run("should not match format for non-PNG file", func(t *testing.T) {
+	t.Run("InvalidImageFormatDetection", func(t *testing.T) {
 		nonPNG := []byte("NOTPNGHEADER")
 		_, matched := extractor.MatchFormat(nonPNG)
 
